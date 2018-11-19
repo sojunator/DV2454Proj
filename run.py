@@ -15,7 +15,7 @@ def createNetwork(dimensions):
         hiddenLayer = 2 * np.random.random((dimensions["inputLayer"] + 2, dimensions["inputLayer"] + 2)) - 1
         network.append(hiddenLayer)
 
-    hiddenLayer = 2 * np.random.random((dimensions["inputLayer"] + 2, 2)) - 1
+    hiddenLayer = 2 * np.random.random((dimensions["inputLayer"] + 2, dimensions["outputLayer"])) - 1
 
     network.append(hiddenLayer)
 
@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     dimensions["inputLayer"] = len(inputLayer)
     dimensions["nrOfHiddenLayers"] = 1
-
+    dimensions["outputLayer"] = actionSpace.n
 
     network = createNetwork(dimensions)
     action = forwardPropagation(inputLayer, network)
