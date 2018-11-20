@@ -47,11 +47,11 @@ if __name__ == '__main__':
     outputLayer = forwardPropagation(inputLayer, network)
     action = outputLayer.tolist().index(max(outputLayer.tolist()))
 
-    rewards = []
+    scores = []
     networks = []
     for episode in range(10000):
         network = createNetwork(dimensions)
-
+        score = 0
         for i in range(100):
             observation, reward, done, info = env.step(action)
 
@@ -60,22 +60,20 @@ if __name__ == '__main__':
             outputLayer = forwardPropagation(inputLayer, network)
 
             action = outputLayer.tolist().index(max(outputLayer.tolist()))
-
+            score += reward
             if done:
-                if i > 70:
-                    rewards.append(i)
-                    networks.append(network)
+                scores.append(score)
+                networks.append(network)
                 break
 
         env.reset()
 
 
-    highestIndex = rewards.index(max(rewards))
+    highestIndex = scores.index(max(scores))
 
     for i in range(100):
         observation, reward, done, info = env.step(action)
         if done:
-            print(i)
             break
 
         env.render()
@@ -86,4 +84,4 @@ if __name__ == '__main__':
 
         action = outputLayer.tolist().index(max(outputLayer.tolist()))
 
-    print(rewards[highestIndex])
+    print(scores[highestIndex])
