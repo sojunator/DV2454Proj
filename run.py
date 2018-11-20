@@ -24,7 +24,7 @@ def createNetwork(dimensions):
 def forwardPropagation(inputLayer, network):
     Z = inputLayer
     for layer in network:
-        Z = np.dot(Z, layer)
+        Z = sigmoid(np.dot(Z, layer))
     return Z
 
 
@@ -44,5 +44,46 @@ if __name__ == '__main__':
     dimensions["outputLayer"] = actionSpace.n
 
     network = createNetwork(dimensions)
-    action = forwardPropagation(inputLayer, network)
-    print(action)
+    outputLayer = forwardPropagation(inputLayer, network)
+    action = outputLayer.tolist().index(max(outputLayer.tolist()))
+
+    rewards = []
+    networks = []
+    for episode in range(10000):
+        network = createNetwork(dimensions)
+
+        for i in range(100):
+            observation, reward, done, info = env.step(action)
+
+            inputLayer = observation.flatten()
+
+            outputLayer = forwardPropagation(inputLayer, network)
+
+            action = outputLayer.tolist().index(max(outputLayer.tolist()))
+
+            if done:
+                if i > 70:
+                    rewards.append(i)
+                    networks.append(network)
+                break
+
+        env.reset()
+
+
+    highestIndex = rewards.index(max(rewards))
+
+    for i in range(100):
+        observation, reward, done, info = env.step(action)
+        if done:
+            print(i)
+            break
+
+        env.render()
+
+        inputLayer = observation.flatten()
+
+        outputLayer = forwardPropagation(inputLayer, networks[highestIndex])
+
+        action = outputLayer.tolist().index(max(outputLayer.tolist()))
+
+    print(rewards[highestIndex])
