@@ -1,7 +1,6 @@
 import gym
 import numpy as np
 
-
 def sigmoid(x):
     return 1 / (1 + np.exp(x))
 
@@ -25,13 +24,46 @@ def forwardPropagation(inputLayer, network):
     Z = inputLayer
     for layer in network:
         Z = sigmoid(np.dot(Z, layer))
-    return Z
 
+    # Convert outputlayer to a regular list
+    return Z.tolist()
+
+
+def testNetwork(network, nrOfSteps, env):
+    # Create data for our first move
+    observation = env.reset()
+
+    # Convert data to useable format
+    inputLayer = observation.flatten()
+
+    # Calculate first move
+    outputLayer = forwardPropagation(inputLayer, network)
+    action = outputLayer.index(max(outputLayer))
+
+    # Score for the network
+    score = 0
+
+    for i in range(nrOfSteps):
+        observation, reward, done, info = env.step(action)
+
+        score += reward
+
+        if done:
+            print("Done after {} episodes".format(i))
+            break
+
+        inputLayer = observation.flatten()
+
+        outputLayer = forwardPropagation(inputLayer, network)
+        action = outputLayer.index(max(outputLayer))
+
+    return score
 
 if __name__ == '__main__':
 
     env = gym.make("CartPole-v1")
     observation = env.reset()
+    nrOfNetworks = 1000
 
     # Since observation can be of any dim, we first flatten the array
     inputLayer = observation.flatten()
@@ -43,45 +75,12 @@ if __name__ == '__main__':
     dimensions["nrOfHiddenLayers"] = 1
     dimensions["outputLayer"] = actionSpace.n
 
-    network = createNetwork(dimensions)
-    outputLayer = forwardPropagation(inputLayer, network)
-    action = outputLayer.tolist().index(max(outputLayer.tolist()))
-
-    scores = []
     networks = []
-    for episode in range(10000):
-        network = createNetwork(dimensions)
-        score = 0
-        for i in range(100):
-            observation, reward, done, info = env.step(action)
+    for i in range(nrOfNetworks):
+        networks.append(createNetwork(dimensions))
 
-            inputLayer = observation.flatten()
-
-            outputLayer = forwardPropagation(inputLayer, network)
-
-            action = outputLayer.tolist().index(max(outputLayer.tolist()))
-            score += reward
-            if done:
-                scores.append(score)
-                networks.append(network)
-                break
-
-        env.reset()
+    for network in networks:
+        testNetwork(network, 201, env)
 
 
-    highestIndex = scores.index(max(scores))
-
-    for i in range(100):
-        observation, reward, done, info = env.step(action)
-        if done:
-            break
-
-        env.render()
-
-        inputLayer = observation.flatten()
-
-        outputLayer = forwardPropagation(inputLayer, networks[highestIndex])
-
-        action = outputLayer.tolist().index(max(outputLayer.tolist()))
-
-    print(scores[highestIndex])
+    env.close()
