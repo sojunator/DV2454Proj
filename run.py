@@ -49,7 +49,6 @@ def testNetwork(network, nrOfSteps, env):
         score += reward
 
         if done:
-            print("Done after {} episodes".format(i))
             break
 
         inputLayer = observation.flatten()
@@ -75,12 +74,39 @@ if __name__ == '__main__':
     dimensions["nrOfHiddenLayers"] = 1
     dimensions["outputLayer"] = actionSpace.n
 
+    # Scores will contain all scores for the respektive network
     networks = []
+    scores = []
+
+    # Create our networks and store them in networks list
     for i in range(nrOfNetworks):
         networks.append(createNetwork(dimensions))
 
-    for network in networks:
-        testNetwork(network, 201, env)
+    for i in range(1000):
+        for network in networks:
+            scores.append(testNetwork(network, 201, env))
 
+        # Find networks that are good for mutation and breeding
+        # If a network does not pass criteria, it get removed
+        # criteria is currently being larger than average in score
+        averageScore = sum(scores) / len(scores)
+        print(averageScore)
+        removedNetWorkCounter = 0
+        for score in scores:
+            if score < averageScore:
+                index = scores.index(score)
 
+                networks.pop(index)
+                scores.pop(index)
+
+                removedNetWorkCounter += 1
+
+        # Apply genetics and breeding
+
+        #Generate new networks to refill the pool
+        for i in range(removedNetWorkCounter):
+            networks.append(createNetwork(dimensions))
+
+        # reset scores
+        del scores[:]
     env.close()
