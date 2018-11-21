@@ -164,8 +164,7 @@ if __name__ == '__main__':
 
     env.close()
 
-    x_val = [x[0] for x in best]
-    y_val = [x[1] for x in best]
+    x_val, yal = best
 
 
     plt.plot(x_val,y_val)
