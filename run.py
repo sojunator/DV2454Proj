@@ -100,14 +100,15 @@ def testNetwork(network, nrOfSteps, env):
 
 if __name__ == '__main__':
 
-    env = gym.make("CartPole-v1")
+    env = gym.make("FetchPickAndPlace-v1")
     observation = env.reset()
     nrOfNetworks = 30
     generations = 1000
     keepPerGenRatio = 1 / 5
-    learn = False
+    learn = True
 
     # Since observation can be of any dim, we first flatten the array
+
     inputLayer = observation.flatten()
     actionSpace = env.action_space
 
@@ -128,17 +129,19 @@ if __name__ == '__main__':
 
     for i in range(generations):
         for network in networks:
-            network[0] = testNetwork(network[1], 201, env)
+            avgScore = 0
+            for j in range(3):
+                avgScore += testNetwork(network[1], 201, env)
+            network[0] = avgScore / 3
 
         # Sort networks by performance
         # Keep top 100
         networks.sort(key=lambda x : x[0])
         networks = networks[ int(len(networks) * -keepPerGenRatio) : ]
-
-        best.append((i, network[0]))
-
+        print(networks[0][0])
+        if (i % 10 is 0):
+            best.append((i, networks[0][0]))
         if learn:
-
             # Apply genetics and breeding
             tempPairs = list(itertools.combinations(networks, 2))
 
@@ -158,15 +161,16 @@ if __name__ == '__main__':
                 mutate(network, 200)
 
             #Generate new networks to refill the pool
-            for i in range(nrOfNetworks - len(networks)):
-                networks.append([0,createNetwork(dimensions)])
+        for i in range(nrOfNetworks - len(networks)):
+            networks.append([0,createNetwork(dimensions)])
 
 
     env.close()
 
-    x_val, yal = best
-
+    x_val = [x[0] for x in best]
+    y_val = [x[1] for x in best]
 
     plt.plot(x_val,y_val)
+    plt.axhline(y=199)
     plt.plot(x_val,y_val,'or')
     plt.show()
