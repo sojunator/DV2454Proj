@@ -4,6 +4,27 @@ import numpy as np
 def sigmoid(x):
     return 1 / (1 + np.exp(x))
 
+def genetics(mother, father, split):
+    # Will be a list containing the new networks
+    children = []
+    child = []
+
+    for mLayer, fLayer in zip(mother, father):
+        # Concatenate builds a new matrix from the two sub matrixes
+        # Split divides the inputted matrix into two matrices, returned to a list
+        child.append(np.concatenate((np.hsplit(mLayer, split)[0],
+                                     np.hsplit(fLayer, split)[0]), 1))
+
+    children.append(child)
+    # Do the same procedure again, but take the other halfs
+    for mLayer, fLayer in zip(mother, father):
+        child.append(np.concatenate((np.hsplit(mLayer, split)[1],
+                                     np.hsplit(fLayer, split)[1]), 1))
+
+    children.append(child)
+    return children
+
+
 def createNetwork(dimensions):
     network = []
     hiddenLayer = 2 * np.random.random((dimensions["inputLayer"], dimensions["inputLayer"] + 2)) - 1
@@ -82,6 +103,8 @@ if __name__ == '__main__':
     for i in range(nrOfNetworks):
         networks.append(createNetwork(dimensions))
 
+    children = genetics(networks[0], networks[1], 2)
+    
     for i in range(1000):
         for network in networks:
             scores.append(testNetwork(network, 201, env))
