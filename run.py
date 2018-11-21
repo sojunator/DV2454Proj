@@ -8,8 +8,8 @@ def sigmoid(x):
     return 1 / (1 + np.exp(x))
 
 def mutate(network, maxScore):
-    for layer in network:
-        print(layer + 100)
+    for layer in network[1]:
+        layer = layer + (2 * random.uniform(-1.0, 1.0) - 1) / (network[0])
     return network
 
 def genetics(mother, father, split):
@@ -150,6 +150,7 @@ if __name__ == '__main__':
 
         for pair in temp_copy:
             children.append(genetics(pair[0], pairs[1], 2))
+            children.append(genetics(pair[1], pairs[0], 2))
 
         for child in children:
             networks.append([0, child])
