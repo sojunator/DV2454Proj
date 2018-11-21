@@ -3,13 +3,14 @@ import numpy as np
 import itertools
 import time
 import random
+import matplotlib.pyplot as plt
 
 def sigmoid(x):
     return 1 / (1 + np.exp(x))
 
 def mutate(network, maxScore):
     for layer in network[1]:
-        layer = layer + (2 * random.uniform(-1.0, 1.0) - 1) / (network[0])
+        layer = layer + random.uniform(-1.0, 1.0)  / (10 * network[0])
     return network
 
 def genetics(mother, father, split):
@@ -104,6 +105,7 @@ if __name__ == '__main__':
     nrOfNetworks = 30
     generations = 1000
     keepPerGenRatio = 1 / 5
+    learn = False
 
     # Since observation can be of any dim, we first flatten the array
     inputLayer = observation.flatten()
@@ -122,45 +124,50 @@ if __name__ == '__main__':
     for i in range(nrOfNetworks):
         networks.append([0, createNetwork(dimensions)])
 
+    best = []
+
     for i in range(generations):
         for network in networks:
             network[0] = testNetwork(network[1], 201, env)
-            if network[0] > 200:
-                avgScore = 0
-                for j in range(3):
-                    avgScore += testNetwork(network[1], 201, env)
-
-                if (avgScore / 3.0) > 200:
-                    print("Challanged beat after {} gens, with avgScore {}".format(i, avgScore / 3.0))
-                    time.sleep(1)
 
         # Sort networks by performance
         # Keep top 100
         networks.sort(key=lambda x : x[0])
         networks = networks[ int(len(networks) * -keepPerGenRatio) : ]
 
+        best.append((i, network[0]))
 
-        # Apply genetics and breeding
-        tempPairs = list(itertools.combinations(networks, 2))
+        if learn:
 
-        # iterate over 2 networks pairs, and create two new children
-        # Merge these into our network list
-        temp_copy = list(itertools.combinations([networks], 2))
-        children = []
+            # Apply genetics and breeding
+            tempPairs = list(itertools.combinations(networks, 2))
 
-        for pair in temp_copy:
-            children.append(genetics(pair[0], pairs[1], 2))
-            children.append(genetics(pair[1], pairs[0], 2))
+            # iterate over 2 networks pairs, and create two new children
+            # Merge these into our network list
+            temp_copy = list(itertools.combinations([networks], 2))
+            children = []
 
-        for child in children:
-            networks.append([0, child])
+            for pair in temp_copy:
+                children.append(genetics(pair[0], pairs[1], 2))
+                children.append(genetics(pair[1], pairs[0], 2))
 
-        for network in networks:
-            mutate(network, 200)
+            for child in children:
+                networks.append([0, child])
 
-        #Generate new networks to refill the pool
-        for i in range(nrOfNetworks - len(networks)):
-            networks.append([0,createNetwork(dimensions)])
+            for network in networks:
+                mutate(network, 200)
+
+            #Generate new networks to refill the pool
+            for i in range(nrOfNetworks - len(networks)):
+                networks.append([0,createNetwork(dimensions)])
 
 
     env.close()
+
+    x_val = [x[0] for x in best]
+    y_val = [x[1] for x in best]
+
+
+    plt.plot(x_val,y_val)
+    plt.plot(x_val,y_val,'or')
+    plt.show()
